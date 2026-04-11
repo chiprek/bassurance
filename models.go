@@ -9,7 +9,7 @@ type Process struct {
 	Name        string
 	Description string
 	CreatedAt   time.Time
-	CreatedBy   string
+	CreatedBy   int // Tied to the ID value in the User table
 	Steps       []Step
 }
 
@@ -27,7 +27,7 @@ type Completion struct {
 	ID          int
 	ProcessID   int
 	StepID      int
-	CompletedBy string // user name
+	CompletedBy int // user name
 	CompletedAt time.Time
 	Notes       string // optional notes from operator
 }
@@ -37,4 +37,29 @@ type User struct {
 	Username string
 	Role     string //admin or operator
 	Name     string
+}
+
+type WorkOrder struct {
+	ID         int
+	ProcessID  int    // The template this job is following
+	Identifier string // e.g., "Truck SN-987" or "Customer Job #442"
+	Status     string // "Not Started", "In Progress", "Completed"
+	CreatedAt  time.Time
+	CreatedBy  int // User ID of whoever issued the work order
+}
+
+type QAPhoto struct {
+	ID           int
+	CompletionID int    // Ties the photo directly to the step sign-off
+	FilePath     string // e.g., "/uploads/qa/workorder_12/step_4_xyz.jpg"
+	UploadedAt   time.Time
+	UploadedBy   int // User ID
+}
+
+type Asset struct {
+	ID           int
+	SerialNumber string
+	CustomerName string
+	DateShipped  time.Time
+	// This allows you to tie multiple WorkOrders to a single asset over its lifespan
 }
