@@ -4,12 +4,13 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+
 	"github.com/chiprek/bassurance/store"
 )
 
 func (a *App) Home(w http.ResponseWriter, r *http.Request) {
 
-	processes, err := GetAllProcesses(a.DB)
+	processes, err := store.GetAllProcesses(a.DB)
 	if err != nil {
 		log.Println("Database error:", err)
 		http.Error(w, "Failed to load blueprints", http.StatusInternalServerError)
