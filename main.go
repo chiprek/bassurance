@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/chiprek/bassurance/handlers"
@@ -10,11 +11,22 @@ import (
 func main() {
 	fmt.Println("Initalizing Benchmark assurance")
 
-	http.HandleFunc("/", handlers.Home)
+	db, err := initDB()
+	if err != nil {
+		log.Fatalf("could not initalize database: %v", err)
+	}
+	defer db.Close()
 
-	http.HandleFunc("/admin", handlers.Admin)
+	app := &handlers.App{
+		DB: db,
+	}
+
+	http.HandleFunc("/", app.Home)
+
+	//http.HandleFunc("/admin", app.Admin)
 
 	fmt.Println("Server starting on :8080")
-	http.ListenAndServe(":8080", nil)
-
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		log.Fatalf("server failed: %v", err)
+	}
 }

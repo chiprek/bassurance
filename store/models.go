@@ -1,8 +1,10 @@
 // types to use in this program.
 
-package main
+package store
 
-import "time"
+import (
+	"time"
+)
 
 type Process struct {
 	ID          int
