@@ -1,0 +1,52 @@
+{{template "base" .}} {{define "title"}}Admin Settings{{end}} {{define "body"}}
+<div class="card">
+    <h2>Process Authoring</h2>
+    <p>Define a new blueprint for the floor.</p>
+
+    <form action="/admin" method="POST" style="margin-top: 1.5rem">
+        <div style="margin-bottom: 1rem">
+            <label
+                for="name"
+                style="display: block; font-weight: bold; margin-bottom: 0.5rem"
+                >Process Name</label
+            >
+            <input
+                type="text"
+                id="name"
+                name="name"
+                required
+                style="
+                    width: 100%;
+                    padding: 0.5rem;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                    box-sizing: border-box;
+                "
+            />
+        </div>
+
+        <div style="margin-bottom: 1rem">
+            <label
+                for="description"
+                style="display: block; font-weight: bold; margin-bottom: 0.5rem"
+                >Description</label
+            >
+            <textarea
+                id="description"
+                name="description"
+                rows="3"
+                required
+                style="
+                    width: 100%;
+                    padding: 0.5rem;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                    box-sizing: border-box;
+                "
+            ></textarea>
+        </div>
+
+        <button type="submit" class="btn">Create Blueprint</button>
+    </form>
+</div>
+{{end}}

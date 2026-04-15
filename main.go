@@ -23,7 +23,7 @@ func main() {
 
 	http.HandleFunc("/", app.Home)
 
-	//http.HandleFunc("/admin", app.Admin)
+	http.HandleFunc("/admin", app.Admin)
 
 	fmt.Println("Server starting on :8080")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
