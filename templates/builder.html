@@ -1,0 +1,115 @@
+{{template "base" .}} {{define "title"}}Blueprint Builder{{end}} {{define
+"body"}}
+<div class="card" style="border-top: 4px solid var(--nav-bg)">
+    <h2>{{.Name}}</h2>
+    <p><em>{{.Description}}</em></p>
+    <a href="/" style="font-size: 0.9rem; color: var(--accent)"
+        >← Back to Dashboard</a
+    >
+</div>
+
+<h3>Current Sequence</h3>
+{{if .Steps}}
+<div
+    style="
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+    "
+>
+    {{range .Steps}}
+    <div
+        class="card"
+        style="margin-bottom: 0; padding: 1rem; border-left: 4px solid {{if .Critical}}#e74c3c{{else}}#95a5a6{{end}};"
+    >
+        <strong>Step {{.Order}}: {{.Name}}</strong>
+        <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem">{{.Description}}</p>
+        <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #666">
+            {{if .Required}}✓ Required Build Step{{end}} {{if .Critical}} | ⚠
+            QA Photo Checkpoint{{end}}
+        </div>
+    </div>
+    {{end}}
+</div>
+{{else}}
+<p style="color: #666; font-style: italic">
+    No steps defined yet. Start building below.
+</p>
+{{end}}
+
+<div class="card" style="background-color: #fdfdfd">
+    <h3 style="margin-top: 0">Add Next Step</h3>
+
+    <form action="/admin/builder?id={{.ID}}" method="POST">
+        <div style="margin-bottom: 1rem">
+            <label
+                style="display: block; font-weight: bold; margin-bottom: 0.5rem"
+                >Step Name</label
+            >
+            <input
+                type="text"
+                name="name"
+                required
+                style="
+                    width: 100%;
+                    padding: 0.5rem;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                    box-sizing: border-box;
+                "
+            />
+        </div>
+
+        <div style="margin-bottom: 1rem">
+            <label
+                style="display: block; font-weight: bold; margin-bottom: 0.5rem"
+                >Instructions / Description</label
+            >
+            <textarea
+                name="description"
+                rows="3"
+                required
+                style="
+                    width: 100%;
+                    padding: 0.5rem;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                    box-sizing: border-box;
+                "
+            ></textarea>
+        </div>
+
+        <div style="margin-bottom: 1.5rem; display: flex; gap: 2rem">
+            <label
+                style="
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    cursor: pointer;
+                "
+            >
+                <input type="checkbox" name="required" checked />
+                Required Step
+            </label>
+            <label
+                style="
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    cursor: pointer;
+                    color: #c0392b;
+                    font-weight: bold;
+                "
+            >
+                <input type="checkbox" name="critical" />
+                Critical (Requires Photo)
+            </label>
+        </div>
+
+        <button type="submit" class="btn" style="background-color: #27ae60">
+            Append Step
+        </button>
+    </form>
+</div>
+{{end}}

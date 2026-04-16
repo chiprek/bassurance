@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+// CreateProcessWithSteps creates a new process with steps
 func CreateProcessWithSteps(db *sql.DB, p Process, steps []Step) (int, error) {
 	tx, err := db.Begin()
 	if err != nil {
@@ -52,7 +53,7 @@ func GetProcess(db *sql.DB, id int) (Process, error) {
 	`
 	// scan returned sql colums directly into process structs fields
 	err := db.QueryRow(processQuery, id).Scan(
-		&p.ID, &p.Description, &p.CreatedAt, &p.CreatedBy,
+		&p.ID, &p.Name, &p.Description, &p.CreatedAt, &p.CreatedBy,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -94,6 +95,7 @@ func GetProcess(db *sql.DB, id int) (Process, error) {
 	return p, nil
 }
 
+// GetAllProcesses returns a list of all processes
 func GetAllProcesses(db *sql.DB) ([]Process, error) {
 	query := `
 	SELECT id, name, description, created_at, created_by
@@ -123,4 +125,18 @@ func GetAllProcesses(db *sql.DB) ([]Process, error) {
 		return nil, fmt.Errorf("error iterating over process rows: %w", err)
 	}
 	return processes, nil
+}
+
+// addStep insterts a single step into an existing process
+func AddStep(db *sql.DB, s Step) error {
+	query := `
+	INSERT INTO step (process_id, name, description, required, critical, step_order)
+	VALUES (?,?,?,?,?,?);
+	`
+
+	_, err := db.Exec(query, s.ProcessID, s.Name, s.Description, s.Required, s.Critical, s.Order)
+	if err != nil {
+		return fmt.Errorf("failed to insert step: %w", err)
+	}
+	return nil
 }

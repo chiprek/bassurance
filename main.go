@@ -25,6 +25,8 @@ func main() {
 
 	http.HandleFunc("/admin", app.Admin)
 
+	http.HandleFunc("/admin/builder", app.ProcessBuilder)
+
 	fmt.Println("Server starting on :8080")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatalf("server failed: %v", err)
