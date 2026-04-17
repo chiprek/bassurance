@@ -61,12 +61,6 @@ func (a *App) ProcessBuilder(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid bluprint ID", http.StatusBadRequest)
 		return
 	}
-	process, err := store.GetProcess(a.DB, processID)
-	if err != nil {
-		log.Println("DIAGNOSTIC ERROR:", err)
-		http.Error(w, "Blueprint not found", http.StatusNotFound)
-		return
-	}
 
 	if r.Method == http.MethodPost {
 		err := r.ParseForm()
@@ -75,30 +69,68 @@ func (a *App) ProcessBuilder(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		required := r.FormValue("required") != ""
+		action := r.FormValue("action")
 
-		critical := r.FormValue("critical") != ""
+		if action == "add_step" {
 
-		newStep := store.Step{
-			ProcessID:   processID,
-			Name:        r.FormValue("name"),
-			Description: r.FormValue("description"),
-			Required:    required,
-			Critical:    critical,
-			Order:       len(process.Steps) + 1, //auto sequence:
+			process, _ := store.GetProcess(a.DB, processID)
+
+			newStep := store.Step{
+				ProcessID:   processID,
+				Name:        r.FormValue("name"),
+				Description: r.FormValue("description"),
+				Required:    r.FormValue("required") != "",
+				Critical:    r.FormValue("critical") != "",
+				Order:       len(process.Steps) + 1, //auto sequence:
+			}
+
+			err = store.AddStep(a.DB, newStep)
+			if err != nil {
+				log.Println("Database error:", err)
+				http.Error(w, "Failed to add step", http.StatusInternalServerError)
+				return
+			}
+
 		}
 
-		err = store.AddStep(a.DB, newStep)
-		if err != nil {
-			log.Println("Database error:", err)
-			http.Error(w, "Failed to add step", http.StatusInternalServerError)
-			return
-		}
+		if action == "add_field" {
+			stepID, _ := strconv.Atoi(r.FormValue("step_id"))
 
+			var targetVal, tolerance float64
+			if t := r.FormValue("target_val"); t != "" {
+				targetVal, _ = strconv.ParseFloat(t, 64)
+			}
+			if tol := r.FormValue("tolerance"); tol != "" {
+				tolerance, _ = strconv.ParseFloat(tol, 64)
+			}
+
+			newField := store.StepField{
+				StepID:      stepID,
+				Prompt:      r.FormValue("prompt"),
+				FieldType:   r.FormValue("field_type"),
+				TargetedVal: targetVal,
+				Tolerance:   tolerance,
+				Order:       1,
+			}
+
+			err = store.AddStepField(a.DB, newField)
+			if err != nil {
+				log.Println("Database error adding field:", err)
+				http.Error(w, "Failed to add field", http.StatusInternalServerError)
+				return
+			}
+		}
 		http.Redirect(w, r, fmt.Sprintf("/admin/builder?id=%d", processID), http.StatusSeeOther)
 		return
-
 	}
+
+	process, err := store.GetProcess(a.DB, processID)
+	if err != nil {
+		log.Println("DIAGNOSTIC ERROR:", err)
+		http.Error(w, "Blueprint not found", http.StatusNotFound)
+		return
+	}
+
 	tmpl, err := template.ParseFiles("templates/base.html", "templates/builder.html")
 	if err != nil {
 		log.Println("Template error:", err)

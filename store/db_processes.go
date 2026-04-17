@@ -62,7 +62,7 @@ func GetProcess(db *sql.DB, id int) (Process, error) {
 		}
 		return p, fmt.Errorf("failed to fetch process: %w", err)
 	}
-
+	//fetch the steps
 	stepsQuery := `
 	SELECT id, process_id, name, description, required, critical, step_order
 	FROM step
@@ -87,6 +87,40 @@ func GetProcess(db *sql.DB, id int) (Process, error) {
 		}
 
 		p.Steps = append(p.Steps, s)
+	}
+
+	//fetch the fields of each step
+	feildQuery := `SELECT id, step_id, prompt, feild_type, target_val, tolerance, field_order from step_field WHERE step_id = ? ORDER BY field_order ASC;`
+	for i := range p.Steps {
+		fieldRows, err := db.Query(feildQuery, p.Steps[i].ID)
+		if err != nil {
+			return p, fmt.Errorf("Failed to query fields for step %d: %w", p.Steps[i].ID, err)
+		}
+		for fieldRows.Next() {
+			var f StepField
+
+			var targetNull, toleranceNull sql.NullFloat64
+
+			err := fieldRows.Scan(
+				&f.ID, &f.StepID, &f.Prompt,
+				&targetNull, &toleranceNull, &f.Order,
+			)
+			if err != nil {
+				fieldRows.Close()
+				return p, fmt.Errorf("failed to scan field: %w", err)
+			}
+
+			// sanitize catcher into struct floats
+			if targetNull.Valid {
+				f.TargetedVal = targetNull.Float64
+			}
+			if toleranceNull.Valid {
+				f.Tolerance = toleranceNull.Float64
+			}
+
+			p.Steps[i].Fields = append(p.Steps[i].Fields, f)
+		}
+		fieldRows.Close()
 	}
 	if err := rows.Err(); err != nil {
 		return p, fmt.Errorf("error iterating over steps: %w", err)
@@ -137,6 +171,18 @@ func AddStep(db *sql.DB, s Step) error {
 	_, err := db.Exec(query, s.ProcessID, s.Name, s.Description, s.Required, s.Critical, s.Order)
 	if err != nil {
 		return fmt.Errorf("failed to insert step: %w", err)
+	}
+	return nil
+}
+
+func AddStepField(db *sql.DB, f StepField) error {
+	query := `
+	INSERT INTO step_field (step_id, prompt, field_type, target_val, tolerance, field_order)
+	VALUES (?, ?, ?, ?, ?, ?);
+	`
+	_, err := db.Exec(query, f.StepID, f.Prompt, f.FieldType, f.TargetedVal, f.Tolerance, f.Order)
+	if err != nil {
+		return fmt.Errorf("failed to insert field: %w", err)
 	}
 	return nil
 }

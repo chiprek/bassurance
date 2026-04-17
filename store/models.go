@@ -20,9 +20,20 @@ type Step struct {
 	ProcessID   int // which process it belongs to
 	Name        string
 	Description string
-	Required    bool
-	Critical    bool // if missed = termination level
-	Order       int  // sequence in the process
+	Required    bool        // Marking this in the builder makes a manditory check off for that step
+	Critical    bool        // if missed = termination level
+	Order       int         // sequence in the process
+	Fields      []StepField // A List of reqiored fields
+}
+
+type StepField struct {
+	ID          int
+	StepID      int
+	Prompt      string
+	FieldType   string
+	TargetedVal float64
+	Tolerance   float64
+	Order       int
 }
 
 type Completion struct {

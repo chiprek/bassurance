@@ -75,6 +75,17 @@ func initDB() (*sql.DB, error) {
         uploaded_by INTEGER NOT NULL,
         FOREIGN KEY(completion_id) REFERENCES completion(id),
         FOREIGN KEY(uploaded_by) REFERENCES users(id));`,
+
+		`CREATE TABLE step_field (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        step_id INTEGER NOT NULL,
+        prompt TEXT NOT NULL,
+        field_type TEXT NOT NULL,
+        target_val REAL,
+        tolerance REAL,
+        field_order INTERGER NOT NULL,
+        FOREIGN KEY(step_id) REFERENCES step(id)
+        );`,
 	}
 
 	// The loop that actually executes the SQL strings
