@@ -9,6 +9,8 @@ import (
 	"github.com/google/uuid"
 )
 
+// handleCreateJob Creates a Job by passing it 2 parameters a NAME and an optional Status
+// at this point in development it will return the generated uuid, creation time, name, and status if given.
 func (cfg *apiConfig) handleCreateJob(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Name   string `json:"name"`
