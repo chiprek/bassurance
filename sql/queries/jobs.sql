@@ -1,6 +1,10 @@
--- name: GetJOBS :many
+-- name: GetJobs :many
 SELECT * FROM jobs
 ORDER BY created_at ASC;
+
+-- name: GetJob :one
+SELECT * FROM jobs
+WHERE $1 = name;
 
 -- name: CreateJob :one
 INSERT INTO jobs (id, created_at, updated_at, name, status)
