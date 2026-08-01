@@ -1,6 +1,8 @@
 package cli_cmds
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,6 +12,12 @@ import (
 )
 
 var jobName string
+var jobStatus string
+var sortDirection string
+
+const (
+	ContentTypeJson = "aplication/json"
+)
 
 // noun
 var jobsCmd = &cobra.Command{
@@ -22,11 +30,14 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "lists the active jobs",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		var orderBy string
+		if sortDirection != "" {
+			orderBy = "?sort=" + sortDirection
+		}
 
-		fmt.Println("=========\n= debug =\n=========")
-		fmt.Printf("%v\n", args)
+		apiTarget := "http://localhost:8080/api/v1/jobs" + orderBy
 
-		resp, err := http.Get("http://localhost:8080/api/v1/jobs")
+		resp, err := http.Get(apiTarget)
 		if err != nil {
 			return fmt.Errorf("failed to reach APIL %w", err)
 		}
@@ -50,9 +61,9 @@ var getCmd = &cobra.Command{
 	Short: "Retrieve a specific job",
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		Name := strings.Replace(jobName, " ", "%20", -1)
+		Name := strings.ReplaceAll(jobName, " ", "%20")
 
-		apiTarget := fmt.Sprintf("http://localhost:8080/api/v1/jobs/%s", Name)
+		apiTarget := "http://localhost:8080/api/v1/jobs/" + Name
 
 		fmt.Printf("Getting: %s\n", apiTarget)
 
@@ -76,13 +87,69 @@ var getCmd = &cobra.Command{
 	},
 }
 
-var createCmd = &cobra.Command{}
+var createCmd = &cobra.Command{
+
+	Use:   "create",
+	Short: "create a job",
+	Long:  "Create a job by passing 1 flag name to the api call and 1 optional flag status",
+	RunE: func(cmd *cobra.Command, args []string) error {
+
+		flagName := jobName
+		flagStatus := jobStatus
+
+		type RequestPayload struct {
+			Name   string `json:"name"`
+			Status string `json:"status,omitempty"`
+		}
+
+		payload := RequestPayload{
+			Name:   flagName,
+			Status: flagStatus,
+		}
+
+		data, err := json.Marshal(payload)
+		if err != nil {
+			return fmt.Errorf("unable to marshal data to json: %v", err)
+		}
+
+		apiTarget := "http://localhost:8080/api/v1/jobs"
+
+		resp, err := http.Post(apiTarget, ContentTypeJson, bytes.NewBuffer(data))
+		if err != nil {
+			return fmt.Errorf("Error making POST request: %w", err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode >= 200 && resp.StatusCode <= 300 {
+			fmt.Println("Success: ", resp.Status)
+		} else {
+			fmt.Println("Error returned: ", resp.Status)
+			bodyBytes, _ := io.ReadAll(resp.Body)
+			fmt.Println("Response body:", string(bodyBytes))
+		}
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return fmt.Errorf("failed to read response body: %w", err)
+		}
+
+		fmt.Println(string(body))
+		return nil
+
+	},
+}
 
 func init() {
-	getCmd.Flags().StringVarP(&jobName, "name", "n", "", "The exact name of the job to retrive")
+	listCmd.Flags().StringVarP(&sortDirection, "sort", "s", "", "default sort is asc, pass value desc for descending. sort is based off creation time")
 
+	getCmd.Flags().StringVarP(&jobName, "name", "n", "", "The exact name of the job to retrive")
 	getCmd.MarkFlagRequired("name")
 
+	createCmd.Flags().StringVarP(&jobName, "name", "n", "", "The name of the job to be created")
+	createCmd.Flags().StringVarP(&jobStatus, "status", "s", "", "The status of the job to be created")
+	createCmd.MarkFlagRequired("name")
+
+	jobsCmd.AddCommand(createCmd)
 	jobsCmd.AddCommand(getCmd)
 	jobsCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(jobsCmd)
