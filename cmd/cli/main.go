@@ -2,22 +2,19 @@ package main
 
 import (
 	"os"
+	"strings"
 
-	"github.com/spf13/cobra"
+	_ "embed"
+
+	"github.com/chiprek/bassurance/internal/cli_cmds"
 )
 
+var version string
+
 func main() {
-	cmd := buildGetJobCommand()
-	if err := cmd.Execute(); err != nil {
+	err := cli_cmds.Execute(strings.TrimSpace(version))
+	if err != nil {
 		os.Exit(1)
 	}
 
-}
-
-func buildGetJobCommand() *cobra.Command {
-	getjob := &cobra.Command{
-		Use: "getjob",
-	}
-	getjob.AddCommand()
-	return getjob
 }

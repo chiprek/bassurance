@@ -35,3 +35,4 @@ go.work.sum
 internal/database/db.go
 internal/database/models.go
 internal/database/*.sql.go
+cmd/cli/bassurance
