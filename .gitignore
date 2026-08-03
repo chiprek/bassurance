@@ -36,3 +36,4 @@ internal/database/db.go
 internal/database/models.go
 internal/database/*.sql.go
 cmd/cli/bassurance
+cmd/api_server/bassuranceAPI

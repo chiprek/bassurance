@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/chiprek/bassurance/internal/database"
@@ -35,6 +34,8 @@ func (cfg *apiConfig) handleCreateJob(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, "something went wrong")
 		return
 	}
+
+	requestParams.Name = normalize(requestParams.Name)
 	params := database.CreateJobParams{
 		Name:   requestParams.Name,
 		Status: requestParams.Status,
@@ -91,7 +92,7 @@ func (cfg *apiConfig) handlerGetJobs(w http.ResponseWriter, r *http.Request) {
 func (cfg *apiConfig) handlerGetSpecifiedJob(w http.ResponseWriter, r *http.Request) {
 	UrlName := r.PathValue("name")
 
-	sanitized := strings.ToLower(UrlName)
+	sanitized := normalize(UrlName)
 
 	dbJob, err := cfg.database.GetJob(r.Context(), sanitized)
 	if err != nil {
