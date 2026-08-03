@@ -41,7 +41,7 @@ func main() {
 	mux.HandleFunc("POST /api/v1/jobs", cfg.handleCreateJob)
 	mux.HandleFunc("GET /api/v1/jobs", cfg.handlerGetJobs)
 	mux.HandleFunc("GET /api/v1/jobs/{name}", cfg.handlerGetSpecifiedJob)
-	mux.HandleFunc("POST/api/v1/jobs/{name}/units", cfg.handleCreateUnit)
+	mux.HandleFunc("POST /api/v1/jobs/{name}/units", cfg.handleCreateUnit)
 	server := &http.Server{
 		Addr:    ":" + port,
 		Handler: mux,
