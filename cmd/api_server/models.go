@@ -8,10 +8,10 @@ import (
 
 type Jobs struct {
 	ID         uuid.UUID `json:"id"`
+	Name       string    `json:"name"`
+	Status     string    `json:"status"`
 	Created_at time.Time `json:"created_at"`
 	Updated_at time.Time `json:"updated_at"`
-	Name       string    `json:"name"`
-	Status     string    `json:"status,omitempty"`
 }
 
 type Unit struct {

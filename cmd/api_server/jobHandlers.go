@@ -36,17 +36,21 @@ func (cfg *apiConfig) handleCreateJob(w http.ResponseWriter, r *http.Request) {
 	}
 
 	requestParams.Name = normalize(requestParams.Name)
+
+	newJobID := uuid.New()
+
 	params := database.CreateJobParams{
+		ID:     newJobID,
 		Name:   requestParams.Name,
 		Status: requestParams.Status,
 	}
 
-	created, err := cfg.database.CreateJob(r.Context(), params)
+	createJob, err := cfg.database.CreateJob(r.Context(), params)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "not able to create job")
 		return
 	}
-	respondWithJSON(w, http.StatusCreated, response{ID: created.ID, Created_at: created.CreatedAt, Name: created.Name, Status: created.Status})
+	respondWithJSON(w, http.StatusCreated, response{ID: createJob.ID, Created_at: createJob.CreatedAt.Time, Name: createJob.Name, Status: createJob.Status})
 }
 
 func (cfg *apiConfig) handlerGetJobs(w http.ResponseWriter, r *http.Request) {
@@ -67,10 +71,10 @@ func (cfg *apiConfig) handlerGetJobs(w http.ResponseWriter, r *http.Request) {
 	for _, dbJobs := range dbJobs {
 		allJobs = append(allJobs, Jobs{
 			ID:         dbJobs.ID,
-			Created_at: dbJobs.CreatedAt,
-			Updated_at: dbJobs.UpdatedAt,
 			Name:       dbJobs.Name,
 			Status:     dbJobs.Status,
+			Created_at: dbJobs.CreatedAt.Time,
+			Updated_at: dbJobs.UpdatedAt.Time,
 		})
 	}
 
@@ -105,6 +109,6 @@ func (cfg *apiConfig) handlerGetSpecifiedJob(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, Jobs{ID: dbJob.ID, Created_at: dbJob.CreatedAt, Updated_at: dbJob.UpdatedAt, Name: dbJob.Name, Status: dbJob.Status})
+	respondWithJSON(w, http.StatusOK, Jobs{ID: dbJob.ID, Created_at: dbJob.CreatedAt.Time, Updated_at: dbJob.UpdatedAt.Time, Name: dbJob.Name, Status: dbJob.Status})
 
 }
