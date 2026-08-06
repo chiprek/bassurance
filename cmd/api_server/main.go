@@ -15,8 +15,9 @@ const filepathroot = "."
 const port = "8080"
 
 type apiConfig struct {
-	platform string
-	database *database.Queries
+	Platform string
+	DB       *sql.DB
+	Queries  *database.Queries
 }
 
 func main() {
@@ -34,14 +35,16 @@ func main() {
 	dbQueries := database.New(db)
 
 	cfg := &apiConfig{
-		platform: platform,
-		database: dbQueries,
+		Platform: platform,
+		DB:       db,
+		Queries:  dbQueries,
 	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /api/v1/jobs", cfg.handleCreateJob)
 	mux.HandleFunc("GET /api/v1/jobs", cfg.handlerGetJobs)
 	mux.HandleFunc("GET /api/v1/jobs/{name}", cfg.handlerGetSpecifiedJob)
 	mux.HandleFunc("POST /api/v1/jobs/{name}/units", cfg.handleCreateUnit)
+	mux.HandleFunc("GET /api/v1/jobs/{name}/units", cfg.handleGetUnitsByJob)
 	server := &http.Server{
 		Addr:    ":" + port,
 		Handler: mux,

@@ -45,7 +45,7 @@ func (cfg *apiConfig) handleCreateJob(w http.ResponseWriter, r *http.Request) {
 		Status: requestParams.Status,
 	}
 
-	createJob, err := cfg.database.CreateJob(r.Context(), params)
+	createJob, err := cfg.Queries.CreateJob(r.Context(), params)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "not able to create job")
 		return
@@ -59,7 +59,7 @@ func (cfg *apiConfig) handlerGetJobs(w http.ResponseWriter, r *http.Request) {
 	var dbJobs []database.Job
 	var err error
 
-	dbJobs, err = cfg.database.GetJobs(r.Context())
+	dbJobs, err = cfg.Queries.GetJobs(r.Context())
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "something went wrong")
 		log.Printf("error: %v", err)
@@ -98,7 +98,7 @@ func (cfg *apiConfig) handlerGetSpecifiedJob(w http.ResponseWriter, r *http.Requ
 
 	sanitized := normalize(UrlName)
 
-	dbJob, err := cfg.database.GetJob(r.Context(), sanitized)
+	dbJob, err := cfg.Queries.GetJob(r.Context(), sanitized)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			respondWithError(w, http.StatusNotFound, "Job not found")
