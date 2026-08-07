@@ -14,9 +14,8 @@ import (
 )
 
 func (cfg *apiConfig) handleCreateUnit(w http.ResponseWriter, r *http.Request) {
-	jobName := r.PathValue("name")
 
-	jobDBName := normalize(jobName)
+	jobDBName := normalize(r.PathValue("name"))
 
 	type parameters struct {
 		SerialNumber string `json:"serialnumber"`
@@ -141,5 +140,60 @@ func (cfg *apiConfig) handleGetUnitsByJob(w http.ResponseWriter, r *http.Request
 	}
 
 	respondWithJSON(w, http.StatusOK, responseSlice)
+
+}
+
+func (cfg *apiConfig) handlerAttachUnits(w http.ResponseWriter, r *http.Request) {
+	jobdbname := r.PathValue("name")
+
+	type parameters struct {
+		SerialNumber string `json:"serialnumber"`
+	}
+
+	dc := json.NewDecoder(r.Body)
+
+	prams := parameters{}
+
+	err := dc.Decode(&prams)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "something went wrong")
+		return
+	}
+
+	dbj, err := cfg.Queries.GetJob(r.Context(), jobdbname)
+	{
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				respondWithError(w, http.StatusNotFound, "Job not found")
+				return
+			} else {
+				respondWithError(w, http.StatusInternalServerError, "something went wrong")
+			}
+			return
+		}
+	}
+
+	dbu, err := cfg.Queries.GetUnitBySerialNumber(r.Context(), prams.SerialNumber)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			respondWithError(w, http.StatusNotFound, "Job not found")
+			return
+		} else {
+			respondWithError(w, http.StatusInternalServerError, "something went wrong")
+		}
+		return
+	}
+
+	juparams := database.CreateJobUnitParams{
+		JobID:  dbj.ID,
+		UnitID: dbu,
+	}
+
+	err = cfg.Queries.CreateJobUnit(r.Context(), juparams)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "something went wrong")
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 
 }

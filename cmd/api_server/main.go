@@ -45,6 +45,7 @@ func main() {
 	mux.HandleFunc("GET /api/v1/jobs/{name}", cfg.handlerGetSpecifiedJob)
 	mux.HandleFunc("POST /api/v1/jobs/{name}/units", cfg.handleCreateUnit)
 	mux.HandleFunc("GET /api/v1/jobs/{name}/units", cfg.handleGetUnitsByJob)
+	mux.HandleFunc("POST /api/v1/jobs/{name}/units/attach", cfg.handlerAttachUnits)
 	server := &http.Server{
 		Addr:    ":" + port,
 		Handler: mux,
