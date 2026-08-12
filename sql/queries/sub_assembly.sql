@@ -7,4 +7,9 @@ RETURNING *;
 
 -- name: GetSubAssemblies :many
 SELECT * FROM sub_assemblies
-WHERE unit_id = $1 AND deleted_at IS NULL;
+WHERE unit_id = $1 AND deleted_at IS NULL
+ORDER BY
+    CASE WHEN @sort_direction::text = 'desc' THEN created_at END DESC,
+    CASE WHEN @sort_direction::text = 'asc' THEN created_at END ASC,
+    created_at ASC
+LIMIT $2 OFFSET $3;
