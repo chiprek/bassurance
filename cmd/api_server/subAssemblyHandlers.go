@@ -5,7 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"sort"
+	"strconv"
+	"time"
 
 	"github.com/chiprek/bassurance/internal/database"
 	"github.com/google/uuid"
@@ -54,15 +55,30 @@ func (cfg *apiConfig) handleCreateSubAssembly(w http.ResponseWriter, r *http.Req
 }
 
 func (cfg *apiConfig) handleGetSubAssemblies(w http.ResponseWriter, r *http.Request) {
-	sortDirection := r.URL.Query().Get("sort")
 
-	type SubAssembly struct {
+	type SubAsm struct {
 		ID           uuid.UUID
 		Name         string
-		SerialNumber sql.NullString
+		SerialNumber *string
 		Status       string
-		CreatedAt    sql.NullTime
+		CreatedAt    time.Time
 	}
+
+	limit := int32(10)
+	if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
+		if parsedLimit, err := strconv.Atoi(limitStr); err == nil {
+			limit = int32(parsedLimit)
+		}
+	}
+
+	offset := int32(0)
+	if offsetStr := r.URL.Query().Get("offset"); offsetStr != "" {
+		if parsedOffset, err := strconv.Atoi(offsetStr); err == nil {
+			offset = int32(parsedOffset)
+		}
+	}
+
+	sortDirection := r.URL.Query().Get("sort")
 
 	unitSN := r.PathValue("serial_number")
 
@@ -76,34 +92,36 @@ func (cfg *apiConfig) handleGetSubAssemblies(w http.ResponseWriter, r *http.Requ
 		respondWithError(w, http.StatusInternalServerError, "unable to fetch unit")
 		return
 	}
+
+	getSubAsmParams := database.GetSubAssembliesParams{
+		UnitID:        dbUnit,
+		SortDirection: sortDirection,
+		Limit:         limit,
+		Offset:        offset,
+	}
+
 	var uSubAsm []database.SubAssembly
-	uSubAsm, err = cfg.Queries.GetSubAssemblies(r.Context(), dbUnit)
+	uSubAsm, err = cfg.Queries.GetSubAssemblies(r.Context(), getSubAsmParams)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "something went wrong")
 		return
 	}
 
-	allSubs := make([]SubAssembly, 0, len(uSubAsm))
-	for _, allSub := range allSubs {
-		allSubs = append(allSubs, SubAssembly{
-			ID:           allSub.ID,
-			Name:         allSub.Name,
-			Status:       allSub.Status,
-			SerialNumber: allSub.SerialNumber,
-			CreatedAt:    allSub.CreatedAt,
-		})
-	}
+	allSubs := make([]SubAsm, 0, len(uSubAsm))
+	for _, dbSub := range uSubAsm {
 
-	switch sortDirection {
-	case "desc":
-		sort.Slice(allSubs, func(i, j int) bool {
-			return allSubs[i].CreatedAt.Time.After(allSubs[j].CreatedAt.Time)
-		})
-	case "asc", "":
-		fallthrough
-	default:
-		sort.Slice(allSubs, func(i, j int) bool {
-			return allSubs[i].CreatedAt.Time.Before(allSubs[j].CreatedAt.Time)
+		var sn *string
+
+		if dbSub.SerialNumber.Valid {
+			sn = &dbSub.SerialNumber.String
+		}
+
+		allSubs = append(allSubs, SubAsm{
+			ID:           dbSub.ID,
+			Name:         dbSub.Name,
+			Status:       dbSub.Status,
+			SerialNumber: sn,
+			CreatedAt:    dbSub.CreatedAt,
 		})
 	}
 

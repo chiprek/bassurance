@@ -5,7 +5,7 @@ CREATE TABLE sub_assemblies (
     name TEXT NOT NULL,
     serial_number TEXT,
     status TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
     deleted_at TIMESTAMPTZ
 );
 

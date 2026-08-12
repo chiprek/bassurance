@@ -6,7 +6,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"sort"
+	"strconv"
 	"time"
 
 	"github.com/chiprek/bassurance/internal/database"
@@ -59,7 +59,27 @@ func (cfg *apiConfig) handlerGetJobs(w http.ResponseWriter, r *http.Request) {
 	var dbJobs []database.Job
 	var err error
 
-	dbJobs, err = cfg.Queries.GetJobs(r.Context())
+	limit := int32(10)
+	if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
+		if parsedLimit, err := strconv.Atoi(limitStr); err == nil {
+			limit = int32(parsedLimit)
+		}
+	}
+
+	offset := int32(0)
+	if offsetStr := r.URL.Query().Get("offset"); offsetStr != "" {
+		if parsedOffset, err := strconv.Atoi(offsetStr); err == nil {
+			offset = int32(parsedOffset)
+		}
+	}
+
+	GetJobsParams := database.GetJobsParams{
+		SortDirection: sortDirection,
+		Limit:         limit,
+		Offset:        offset,
+	}
+
+	dbJobs, err = cfg.Queries.GetJobs(r.Context(), GetJobsParams)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "something went wrong")
 		log.Printf("error: %v", err)
@@ -78,18 +98,6 @@ func (cfg *apiConfig) handlerGetJobs(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	switch sortDirection {
-	case "desc":
-		sort.Slice(allJobs, func(i, j int) bool {
-			return allJobs[i].Created_at.After(allJobs[j].Created_at)
-		})
-	case "asc", "":
-		fallthrough
-	default:
-		sort.Slice(allJobs, func(i, j int) bool {
-			return allJobs[i].Created_at.Before(allJobs[j].Created_at)
-		})
-	}
 	respondWithJSON(w, http.StatusOK, allJobs)
 }
 
