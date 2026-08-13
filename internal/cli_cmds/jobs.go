@@ -92,6 +92,7 @@ var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "create a job",
 	Long:  "Create a job by passing 1 flag name to the api call and 1 optional flag status",
+	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		flagName := jobName
@@ -120,20 +121,19 @@ var createCmd = &cobra.Command{
 		}
 		defer resp.Body.Close()
 
-		if resp.StatusCode >= 200 && resp.StatusCode <= 300 {
-			fmt.Println("Success: ", resp.Status)
-		} else {
-			fmt.Println("Error returned: ", resp.Status)
-			bodyBytes, _ := io.ReadAll(resp.Body)
-			fmt.Println("Response body:", string(bodyBytes))
-		}
-
-		body, err := io.ReadAll(resp.Body)
+		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return fmt.Errorf("failed to read response body: %w", err)
 		}
 
-		fmt.Println(string(body))
+		if resp.StatusCode >= 200 && resp.StatusCode <= 300 {
+			fmt.Println("Success: ", resp.Status)
+			fmt.Println(string(bodyBytes))
+		} else {
+			fmt.Println("Error returned: ", resp.Status)
+			fmt.Println("Response body:", string(bodyBytes))
+		}
+
 		return nil
 
 	},
