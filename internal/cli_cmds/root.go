@@ -4,6 +4,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var SerialNumber string
+var jobName string
+var jobStatus string
+var sortDirection string
+
+const (
+	ContentTypeJson = "aplication/json"
+)
+
 var rootCmd = &cobra.Command{
 	Use:   "bassurance",
 	Short: "Bassurance CLI tool",

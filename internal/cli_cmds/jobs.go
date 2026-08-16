@@ -11,14 +11,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var jobName string
-var jobStatus string
-var sortDirection string
-
-const (
-	ContentTypeJson = "aplication/json"
-)
-
 // noun
 var jobsCmd = &cobra.Command{
 	Use:   "jobs",
