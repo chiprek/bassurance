@@ -13,6 +13,7 @@ const (
 	ContentTypeJson = "aplication/json"
 )
 
+// creates the rootCmd
 func NewRootCmd(cfg *Config, version string) *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:     "bassurance",
@@ -20,7 +21,7 @@ func NewRootCmd(cfg *Config, version string) *cobra.Command {
 		Long:    "The CLI tool made to connect to the Btask API server",
 		Version: version,
 	}
-
+	//attaches the jobs and units cmd to root cmd.
 	rootCmd.AddCommand(NewJobCmd(cfg))
 	rootCmd.AddCommand(NewUnitCmd(cfg))
 
