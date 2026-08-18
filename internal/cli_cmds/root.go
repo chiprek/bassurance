@@ -4,22 +4,26 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var SerialNumber string
-var jobName string
-var jobStatus string
-var sortDirection string
+type Config struct {
+	APIUrl string `toml:"api_url"`
+	Output string `toml:"output"`
+}
 
 const (
 	ContentTypeJson = "aplication/json"
 )
 
-var rootCmd = &cobra.Command{
-	Use:   "bassurance",
-	Short: "Bassurance CLI tool",
-	Long:  "The CLI tool made to connect to the Btask API server",
-}
+func NewRootCmd(cfg *Config, version string) *cobra.Command {
+	rootCmd := &cobra.Command{
+		Use:     "bassurance",
+		Short:   "Bassurance CLI tool",
+		Long:    "The CLI tool made to connect to the Btask API server",
+		Version: version,
+	}
 
-func Execute(version string) error {
-	rootCmd.Version = version
-	return rootCmd.Execute()
+	rootCmd.AddCommand(NewJobCmd(cfg))
+	rootCmd.AddCommand(NewUnitCmd(cfg))
+
+	return rootCmd
+
 }
