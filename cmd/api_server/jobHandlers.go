@@ -53,6 +53,7 @@ func (cfg *apiConfig) handleCreateJob(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusCreated, response{ID: createJob.ID, Created_at: createJob.CreatedAt.Time, Name: createJob.Name, Status: createJob.Status})
 }
 
+// Returns all active jobs can be returned in acending order, or decendig order with a default limit of 10
 func (cfg *apiConfig) handlerGetJobs(w http.ResponseWriter, r *http.Request) {
 	sortDirection := r.URL.Query().Get("sort")
 
@@ -101,6 +102,7 @@ func (cfg *apiConfig) handlerGetJobs(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, allJobs)
 }
 
+// returns specified jobs off of job name field in the database
 func (cfg *apiConfig) handlerGetSpecifiedJob(w http.ResponseWriter, r *http.Request) {
 	UrlName := r.PathValue("name")
 
