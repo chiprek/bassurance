@@ -38,4 +38,3 @@ internal/database/*.sql.go
 
 # The built applications themself.
 cmd/api_server/bassuranceAPI
-bassurance
