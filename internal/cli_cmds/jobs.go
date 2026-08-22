@@ -134,26 +134,65 @@ func NewJobCmd(cfg *Config) *cobra.Command {
 
 		},
 	}
+	createCmd.Flags().StringVarP(&createJobName, "name", "n", "", "The name of the job to be created")
+	createCmd.Flags().StringVarP(&createJobStatus, "status", "s", "", "The status of the job to be created")
+	createCmd.MarkFlagRequired("name")
 
 	var attachJobName string
+	var attachUnitSn string
 	//attach job to unit
-	attachCmd := cobra.Command{
+	attachCmd := &cobra.Command{
 		Use:   "attach",
 		Short: "attach job to unit ",
 		RunE: func(cmd *cobra.Command, args []string) error {
 
+			type RequestPayload struct {
+				Serial_number string `json:"serial_number"`
+			}
+
+			escapedName := strings.ReplaceAll(attachJobName, " ", "%20")
+
+			payload := RequestPayload{
+				Serial_number: attachUnitSn,
+			}
+
+			data, err := json.Marshal(payload)
+			if err != nil {
+				return fmt.Errorf("unable to marshal data to json: %v", err)
+			}
+			apiTarget := fmt.Sprintf("%s/jobs/%s/units/attach", cfg.APIUrl, escapedName)
+
+			resp, err := http.Post(apiTarget, ContentTypeJson, bytes.NewBuffer(data))
+			if err != nil {
+				return fmt.Errorf("Error making POST request: %w", err)
+			}
+			defer resp.Body.Close()
+
+			bodyBytes, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return fmt.Errorf("failed to read response body: %w", err)
+			}
+
+			if resp.StatusCode == 204 {
+				fmt.Println("Success: ", resp.Status)
+				fmt.Println(string(bodyBytes))
+			} else {
+				fmt.Println("Error returned: ", resp.Status)
+				fmt.Println("Response body:", string(bodyBytes))
+			}
+
 			return nil
 		},
 	}
-
-	createCmd.Flags().StringVarP(&createJobName, "name", "n", "", "The name of the job to be created")
-	createCmd.Flags().StringVarP(&createJobStatus, "status", "s", "", "The status of the job to be created")
-	createCmd.MarkFlagRequired("name")
+	createCmd.Flags().StringVarP(&attachJobName, "name", "n", "", "The name of the job to attach a unit to")
+	createCmd.Flags().StringVarP(&attachUnitSn, "serial_number", "s", "", "The serial number of the unit to be attached to the job")
+	createCmd.MarkFlagsRequiredTogether("name", "serial_number")
 
 	// Attcach sub commands to parent command
 	jobsCmd.AddCommand(listCmd)
 	jobsCmd.AddCommand(getCmd)
 	jobsCmd.AddCommand(createCmd)
+	jobsCmd.AddCommand(attachCmd)
 
 	return jobsCmd
 }
