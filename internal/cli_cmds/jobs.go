@@ -134,6 +134,18 @@ func NewJobCmd(cfg *Config) *cobra.Command {
 
 		},
 	}
+
+	var attachJobName string
+	//attach job to unit
+	attachCmd := cobra.Command{
+		Use:   "attach",
+		Short: "attach job to unit ",
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+			return nil
+		},
+	}
+
 	createCmd.Flags().StringVarP(&createJobName, "name", "n", "", "The name of the job to be created")
 	createCmd.Flags().StringVarP(&createJobStatus, "status", "s", "", "The status of the job to be created")
 	createCmd.MarkFlagRequired("name")
