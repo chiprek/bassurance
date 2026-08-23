@@ -1,7 +1,11 @@
 -- name: GetUnits :many
 SELECT * FROM units
 WHERE deleted_at IS NULL
-ORDER BY created_at ASC;
+ORDER BY
+    CASE WHEN @sort_direction::text = 'desc' THEN created_at END DESC,
+    CASE WHEN @sort_direction::text = 'asc' THEN created_at END ASC,
+    created_at ASC
+LIMIT $1 OFFSET $2;
 
 -- name: GetUnit :one
 SELECT * FROM units
