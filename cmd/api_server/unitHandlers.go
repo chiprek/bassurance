@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -18,7 +19,7 @@ func (cfg *apiConfig) handleCreateUnit(w http.ResponseWriter, r *http.Request) {
 	jobDBName := normalize(r.PathValue("name"))
 
 	type parameters struct {
-		SerialNumber string `json:"serialnumber"`
+		SerialNumber string `json:"serial_number"`
 	}
 
 	type response struct {
@@ -196,4 +197,51 @@ func (cfg *apiConfig) handlerAttachUnits(w http.ResponseWriter, r *http.Request)
 	}
 	w.WriteHeader(http.StatusNoContent)
 
+}
+
+func (cfg *apiConfig) handlerListUnits(w http.ResponseWriter, r *http.Request) {
+	sortDirection := r.URL.Query().Get("sort")
+
+	var dbUnits []database.Unit
+	var err error
+
+	limit := int32(10)
+	if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
+		if parsedLimit, err := strconv.Atoi(limitStr); err == nil {
+			limit = int32(parsedLimit)
+		}
+	}
+
+	offset := int32(0)
+	if offsetStr := r.URL.Query().Get("offset"); offsetStr != "" {
+		if parsedOffset, err := strconv.Atoi(offsetStr); err == nil {
+			offset = int32(parsedOffset)
+		}
+	}
+
+	GetUnitsParams := database.GetUnitsParams{
+		SortDirection: sortDirection,
+		Limit:         limit,
+		Offset:        offset,
+	}
+
+	dbUnits, err = cfg.Queries.GetUnits(r.Context(), GetUnitsParams)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "something went wrong")
+		log.Printf("error: %v", err)
+		return
+	}
+
+	allUnits := make([]database.Unit, 0, len(dbUnits))
+
+	for _, dbUnits := range dbUnits {
+		allUnits = append(allUnits, database.Unit{
+			ID:           dbUnits.ID,
+			SerialNumber: dbUnits.SerialNumber,
+			CreatedAt:    dbUnits.CreatedAt,
+			DeletedAt:    dbUnits.DeletedAt,
+		})
+	}
+
+	respondWithJSON(w, http.StatusOK, allUnits)
 }
