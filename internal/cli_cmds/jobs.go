@@ -184,9 +184,9 @@ func NewJobCmd(cfg *Config) *cobra.Command {
 			return nil
 		},
 	}
-	createCmd.Flags().StringVarP(&attachJobName, "name", "n", "", "The name of the job to attach a unit to")
-	createCmd.Flags().StringVarP(&attachUnitSn, "serial_number", "s", "", "The serial number of the unit to be attached to the job")
-	createCmd.MarkFlagsRequiredTogether("name", "serial_number")
+	attachCmd.Flags().StringVarP(&attachJobName, "name", "n", "", "The name of the job to attach a unit to")
+	attachCmd.Flags().StringVarP(&attachUnitSn, "serial_number", "s", "", "The serial number of the unit to be attached to the job")
+	attachCmd.MarkFlagsRequiredTogether("name", "serial_number")
 
 	// Attcach sub commands to parent command
 	jobsCmd.AddCommand(listCmd)
