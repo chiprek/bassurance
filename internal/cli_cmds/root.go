@@ -24,6 +24,7 @@ func NewRootCmd(cfg *Config, version string) *cobra.Command {
 	//attaches the jobs and units cmd to root cmd.
 	rootCmd.AddCommand(NewJobCmd(cfg))
 	rootCmd.AddCommand(NewUnitCmd(cfg))
+	rootCmd.AddCommand(NewSubAsmCmd(cfg))
 
 	return rootCmd
 
