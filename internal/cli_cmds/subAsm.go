@@ -1,6 +1,11 @@
 package cli_cmds
 
-import "github.com/spf13/cobra"
+import (
+	"encoding/json"
+	"fmt"
+
+	"github.com/spf13/cobra"
+)
 
 func NewSubAsmCmd(cfg *Config) *cobra.Command {
 	subAsmCmd := &cobra.Command{
@@ -9,11 +14,27 @@ func NewSubAsmCmd(cfg *Config) *cobra.Command {
 	}
 
 	var createName string
+	var unitSN string
 	var createSN string
 	createCmd := &cobra.Command{
 		Use:   "create",
 		Short: "Create sub assembly",
 		RunE: func(cmd *cobra.Command, args []string) error {
+
+			type requestParams struct {
+				Serial string `json:"serial_number"`
+			}
+			payload := requestParams{
+				Serial: createSN,
+			}
+
+			data, err := json.Marshal(payload)
+			if err != nil {
+				return fmt.Errorf("unable to marshal data to json: %v", err)
+			}
+
+			apiTarget := fmt.Sprintf("%s/units/%s/sub-assemblies", cfg.APIUrl, unitSN)
+
 			return nil
 		},
 	}
