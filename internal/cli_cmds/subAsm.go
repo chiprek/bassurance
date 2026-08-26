@@ -1,8 +1,11 @@
 package cli_cmds
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 
 	"github.com/spf13/cobra"
 )
@@ -16,16 +19,21 @@ func NewSubAsmCmd(cfg *Config) *cobra.Command {
 	var createName string
 	var unitSN string
 	var createSN string
+	var createStatus string
 	createCmd := &cobra.Command{
 		Use:   "create",
 		Short: "Create sub assembly",
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			type requestParams struct {
-				Serial string `json:"serial_number"`
+				Name         string `json:"name"`
+				SerialNumber string `json:"serial_number"`
+				Status       string `json:"status"`
 			}
 			payload := requestParams{
-				Serial: createSN,
+				Name:         createName,
+				SerialNumber: createSN,
+				Status:       createStatus,
 			}
 
 			data, err := json.Marshal(payload)
@@ -35,10 +43,32 @@ func NewSubAsmCmd(cfg *Config) *cobra.Command {
 
 			apiTarget := fmt.Sprintf("%s/units/%s/sub-assemblies", cfg.APIUrl, unitSN)
 
+			resp, err := http.Post(apiTarget, ContentTypeJson, bytes.NewBuffer(data))
+			if err != nil {
+				return fmt.Errorf("Error making POST request: %w", err)
+			}
+			defer resp.Body.Close()
+
+			bodyBytes, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return fmt.Errorf("failed to read response body: %w", err)
+			}
+
+			if resp.StatusCode == 200 {
+				fmt.Println("Sucess: ", resp.Status)
+				fmt.Println("Response body: ", string(bodyBytes))
+			} else {
+				fmt.Println("Error returned: ", resp.Status)
+				fmt.Println("Respose body: ", string(bodyBytes))
+			}
+
 			return nil
 		},
 	}
 	createCmd.Flags().StringVarP(&createName, "name", "n", "", "name of what the sub assembly is eg: Diesel heater.")
 	createCmd.Flags().StringVarP(&createSN, "serial", "s", "", "Insert the serial number if the sub assembly has one eg: measuring head")
+	createCmd.Flags().StringVarP(&createStatus, "status", "st", "", "Status of the sub asembly eg: completed ongoing or prepairing.")
+	createCmd.Flags().StringVarP(&unitSN, "unit", "u", "", "Serial number of unit this sub assembly ")
+
 	return subAsmCmd
 }
