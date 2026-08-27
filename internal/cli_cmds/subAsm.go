@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -21,8 +22,9 @@ func NewSubAsmCmd(cfg *Config) *cobra.Command {
 	var createSN string
 	var createStatus string
 	createCmd := &cobra.Command{
-		Use:   "create",
+		Use:   "create [unitSN]",
 		Short: "Create sub assembly",
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			type requestParams struct {
@@ -35,13 +37,15 @@ func NewSubAsmCmd(cfg *Config) *cobra.Command {
 				SerialNumber: createSN,
 				Status:       createStatus,
 			}
+			unitSN = args[0]
+			escapedName := strings.ReplaceAll(unitSN, " ", "%20")
 
 			data, err := json.Marshal(payload)
 			if err != nil {
 				return fmt.Errorf("unable to marshal data to json: %v", err)
 			}
 
-			apiTarget := fmt.Sprintf("%s/units/%s/sub-assemblies", cfg.APIUrl, unitSN)
+			apiTarget := fmt.Sprintf("%s/units/%s/sub-assemblies", cfg.APIUrl, escapedName)
 
 			resp, err := http.Post(apiTarget, ContentTypeJson, bytes.NewBuffer(data))
 			if err != nil {
@@ -68,7 +72,6 @@ func NewSubAsmCmd(cfg *Config) *cobra.Command {
 	createCmd.Flags().StringVarP(&createName, "name", "n", "", "name of what the sub assembly is eg: Diesel heater.")
 	createCmd.Flags().StringVarP(&createSN, "serial", "s", "", "Insert the serial number if the sub assembly has one eg: measuring head")
 	createCmd.Flags().StringVarP(&createStatus, "status", "st", "", "Status of the sub asembly eg: completed ongoing or prepairing.")
-	createCmd.Flags().StringVarP(&unitSN, "unit", "u", "", "Serial number of unit this sub assembly ")
 
 	return subAsmCmd
 }
