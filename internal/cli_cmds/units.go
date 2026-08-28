@@ -53,10 +53,12 @@ func NewUnitCmd(cfg *Config) *cobra.Command {
 	var createUnitSn string
 	var createUnitJob string
 	createCmd := &cobra.Command{
-		Use:   "create",
+		Use:   "create [UnitSn] [Jobname]",
 		Short: "create a unit from a serial number",
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-
+			createUnitSn = args[0]
+			createUnitJob = args[1]
 			escapedName := strings.ReplaceAll(createUnitJob, " ", "%20")
 
 			type RequestParams struct {
@@ -96,10 +98,7 @@ func NewUnitCmd(cfg *Config) *cobra.Command {
 			return nil
 		},
 	}
-	// seting the flags for createCmd
-	createCmd.Flags().StringVarP(&createUnitSn, "serial_number", "s", "", "Serial number of the unit to be created")
-	createCmd.Flags().StringVarP(&createUnitJob, "job", "j", "", "The name of the job this unit will be attached to")
-	createCmd.MarkFlagsRequiredTogether("serial_number", "job")
+
 	// Attach cmds to unitsCmd
 	unitsCmd.AddCommand(listCmd)
 	unitsCmd.AddCommand(createCmd)
