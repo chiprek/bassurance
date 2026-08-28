@@ -22,7 +22,7 @@ func NewSubAsmCmd(cfg *Config) *cobra.Command {
 	var createSN string
 	var createStatus string
 	createCmd := &cobra.Command{
-		Use:   "create [unitSN]",
+		Use:   "create [unit SN]",
 		Short: "Create sub assembly",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
