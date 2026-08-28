@@ -53,9 +53,12 @@ func NewJobCmd(cfg *Config) *cobra.Command {
 
 	var getJobName string
 	getCmd := &cobra.Command{
-		Use:   "get",
+		Use:   "get [job name]",
 		Short: "Retrieve a specific job",
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+
+			getJobName = args[0]
 
 			escapedName := strings.ReplaceAll(getJobName, " ", "%20")
 
@@ -80,8 +83,6 @@ func NewJobCmd(cfg *Config) *cobra.Command {
 			return nil
 		},
 	}
-	getCmd.Flags().StringVarP(&getJobName, "name", "n", "", "The exact name of the job to retrive")
-	getCmd.MarkFlagRequired("name")
 
 	// Create Cmd
 
@@ -89,11 +90,13 @@ func NewJobCmd(cfg *Config) *cobra.Command {
 	var createJobStatus string
 	createCmd := &cobra.Command{
 
-		Use:   "create",
+		Use:   "create [job name]",
 		Short: "create a job",
 		Long:  "Create a job by passing 1 flag name to the api call and 1 optional flag status",
-		Args:  cobra.NoArgs,
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+
+			createJobName = args[0]
 			type RequestPayload struct {
 				Name   string `json:"name"`
 				Status string `json:"status,omitempty"`
@@ -134,17 +137,19 @@ func NewJobCmd(cfg *Config) *cobra.Command {
 
 		},
 	}
-	createCmd.Flags().StringVarP(&createJobName, "name", "n", "", "The name of the job to be created")
 	createCmd.Flags().StringVarP(&createJobStatus, "status", "s", "", "The status of the job to be created")
-	createCmd.MarkFlagRequired("name")
 
 	var attachJobName string
 	var attachUnitSn string
 	//attach job to unit
 	attachCmd := &cobra.Command{
-		Use:   "attach",
+		Use:   "attach [job name] [unit SN]",
 		Short: "attach job to unit ",
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
+
+			attachJobName = args[0]
+			attachUnitSn = args[1]
 
 			type RequestPayload struct {
 				Serial_number string `json:"serial_number"`
@@ -184,9 +189,6 @@ func NewJobCmd(cfg *Config) *cobra.Command {
 			return nil
 		},
 	}
-	attachCmd.Flags().StringVarP(&attachJobName, "name", "n", "", "The name of the job to attach a unit to")
-	attachCmd.Flags().StringVarP(&attachUnitSn, "serial_number", "s", "", "The serial number of the unit to be attached to the job")
-	attachCmd.MarkFlagsRequiredTogether("name", "serial_number")
 
 	// Attcach sub commands to parent command
 	jobsCmd.AddCommand(listCmd)
