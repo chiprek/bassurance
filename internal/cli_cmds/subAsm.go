@@ -74,17 +74,38 @@ func NewSubAsmCmd(cfg *Config) *cobra.Command {
 	createCmd.Flags().StringVarP(&createStatus, "status", "S", "", "Status of the sub asembly eg: completed ongoing or prepairing.")
 
 	var listUnitSN string
-	var listDirection string
+	var sortDirection string
 
-	listAsm := cobra.Command{
+	listAsm := &cobra.Command{
 		Use:   "list [unit SN]",
 		Short: "list the sub assemblies on the unit",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			var query string
+			if sortDirection != "" {
+				query = "?sort=" + sortDirection
+			}
+			listUnitSN = args[0]
+			escapedName := strings.ReplaceAll(listUnitSN, " ", "%20")
+			apiTarget := fmt.Sprintf("%s/units/%s/sub-assemblies/%s", cfg.APIUrl, escapedName, query)
+
+			resp, err := http.Get(apiTarget)
+			if err != nil {
+				return fmt.Errorf("failed to reach API: %w", err)
+			}
+			defer resp.Body.Close()
+
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return fmt.Errorf("failed to read response body: %w", err)
+			}
+			fmt.Println(string(body))
 			return nil
 		},
 	}
+	listAsm.Flags().StringVarP(&sortDirection, "sort", "s", "", "Sort order: asc or desc")
 
 	subAsmCmd.AddCommand(createCmd)
+	subAsmCmd.AddCommand(listAsm)
 	return subAsmCmd
 }
