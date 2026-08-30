@@ -22,7 +22,7 @@ func NewSubAsmCmd(cfg *Config) *cobra.Command {
 	var createSN string
 	var createStatus string
 	createCmd := &cobra.Command{
-		Use:   "create [unit SN]",
+		Use:   "create [unitSN]",
 		Short: "Create sub assembly",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -71,7 +71,20 @@ func NewSubAsmCmd(cfg *Config) *cobra.Command {
 	}
 	createCmd.Flags().StringVarP(&createName, "name", "n", "", "name of what the sub assembly is eg: Diesel heater.")
 	createCmd.Flags().StringVarP(&createSN, "serial", "s", "", "Insert the serial number if the sub assembly has one eg: measuring head")
-	createCmd.Flags().StringVarP(&createStatus, "status", "st", "", "Status of the sub asembly eg: completed ongoing or prepairing.")
+	createCmd.Flags().StringVarP(&createStatus, "status", "S", "", "Status of the sub asembly eg: completed ongoing or prepairing.")
 
+	var listUnitSN string
+	var listDirection string
+
+	listAsm := cobra.Command{
+		Use:   "list [unit SN]",
+		Short: "list the sub assemblies on the unit",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return nil
+		},
+	}
+
+	subAsmCmd.AddCommand(createCmd)
 	return subAsmCmd
 }
