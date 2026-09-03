@@ -5,5 +5,7 @@ CREATE TABLE assembly_logs(
     file_path TEXT NOT NULL,
     file_hash TEXT NOT NULL,
     captured_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL,
+    deleted_at TIMESTAMPTZ,
 
 )
