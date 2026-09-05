@@ -8,6 +8,9 @@ CREATE TABLE assembly_logs(
     created_at TIMESTAMPTZ NOT NULL,
     deleted_at TIMESTAMPTZ,
 
-)
+);
 
 CREATE INDEX idx_assembly_logs_if ON assembly_logs(sub_assembly_id, file_hash);
+
+-- +goose down
+DROP TABLE IF EXISTS assembly_logs;
