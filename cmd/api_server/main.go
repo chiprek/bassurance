@@ -49,6 +49,7 @@ func main() {
 	mux.HandleFunc("GET /api/v1/units", cfg.handlerListUnits)
 	mux.HandleFunc("POST /api/v1/units/{serial_number}/sub-assemblies", cfg.handleCreateSubAssembly)
 	mux.HandleFunc("GET /api/v1/units/{serial_number}/sub-assemblies", cfg.handleGetSubAssemblies)
+	mux.HandleFunc("POST /api/v1/jobs/{name}/photos")
 
 	server := &http.Server{
 		Addr:    ":" + port,
