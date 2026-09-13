@@ -7,5 +7,9 @@ func (cfg *apiConfig) HandleCreateJobNote(w http.ResponseWriter, r *http.Request
 
 	sanitized := normalize(UrlName)
 
+	type request struct {
+		subAsmbId string
+	}
+
 	respondWithJSON()
 }
