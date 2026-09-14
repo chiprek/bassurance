@@ -1,6 +1,9 @@
 package main
 
-import "net/http"
+import (
+	"encoding/json"
+	"net/http"
+)
 
 func (cfg *apiConfig) HandleCreateJobNote(w http.ResponseWriter, r *http.Request) {
 	UrlName := r.PathValue("name")
@@ -10,6 +13,9 @@ func (cfg *apiConfig) HandleCreateJobNote(w http.ResponseWriter, r *http.Request
 	type request struct {
 		subAsmbId string
 	}
+
+	decoder := json.NewDecoder(r.Body)
+	params := request{}
 
 	respondWithJSON()
 }
