@@ -17,5 +17,11 @@ func (cfg *apiConfig) HandleCreateJobNote(w http.ResponseWriter, r *http.Request
 	decoder := json.NewDecoder(r.Body)
 	params := request{}
 
+	err := decoder.Decode(&params)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "something went wrong")
+		return
+	}
+
 	respondWithJSON()
 }
