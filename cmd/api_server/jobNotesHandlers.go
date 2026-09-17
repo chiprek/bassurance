@@ -3,12 +3,14 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/chiprek/bassurance/internal/database"
 )
 
 func (cfg *apiConfig) HandleCreateJobNote(w http.ResponseWriter, r *http.Request) {
-	UrlName := r.PathValue("name")
+	UrlID := r.PathValue("id")
 
-	sanitized := normalize(UrlName)
+	sanitized := normalize(UrlID)
 
 	type request struct {
 		subAsmbId string
@@ -22,6 +24,10 @@ func (cfg *apiConfig) HandleCreateJobNote(w http.ResponseWriter, r *http.Request
 		respondWithError(w, http.StatusInternalServerError, "something went wrong")
 		return
 	}
+
+	subparams := database.GetSubAssembliesParams{UnitID: sanitized}
+
+	subassembly, err := cfg.Queries.GetSubAssemblies()
 
 	respondWithJSON()
 }
