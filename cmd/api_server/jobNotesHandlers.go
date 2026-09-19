@@ -1,34 +1,21 @@
 package main
 
 import (
-	"encoding/json"
 	"net/http"
-
-	"github.com/chiprek/bassurance/internal/database"
 )
 
 func (cfg *apiConfig) HandleCreateJobNote(w http.ResponseWriter, r *http.Request) {
-	UrlID := r.PathValue("id")
-
-	sanitized := normalize(UrlID)
-
-	type request struct {
-		subAsmbId string
+	//parse
+	if err := r.ParseMultipartForm(30 << 10); err != nil {
+		respondWithError(w, http.StatusBadRequest, "failed to parse form")
+		return
 	}
-
-	decoder := json.NewDecoder(r.Body)
-	params := request{}
-
-	err := decoder.Decode(&params)
+	//extract
+	file, header, err := r.FormFile("photo")
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "something went wrong")
+		respondWithError(w, http.StatusBadRequest, "failed to get photo")
 		return
 	}
 
-	subparams := database.GetSubAssembliesParams{UnitID: sanitized}
-
-	subassembly, err := cfg.Queries.GetSubAssemblies()
-
-	err = r.ParseMultipartForm(32 << 10)
-	respondWithJSON()
+	
 }
