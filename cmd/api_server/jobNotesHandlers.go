@@ -29,6 +29,6 @@ func (cfg *apiConfig) HandleCreateJobNote(w http.ResponseWriter, r *http.Request
 
 	subassembly, err := cfg.Queries.GetSubAssemblies()
 
-	r.ParseMultipartForm(32 << 10)
+	err = r.ParseMultipartForm(32 << 10)
 	respondWithJSON()
 }
