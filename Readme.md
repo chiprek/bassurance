@@ -17,4 +17,21 @@ things you will need:
 To install the cli tool run
 ```bash
 go install github.com/chiprek/bassurance/cmd/bassurance@latest
+go install github.com/chiprek/bassurance/cmd/api_server@latest
 ```
+
+Using Goose run the available sql migrations via goose up 
+example
+```bash
+  goose up <location of sql database> 
+```
+
+## Todo: 
+- Finish this project.
+- Incoperate a front end. 
+
+## Operations currently available
+- create and modify:
+  - UNITS
+  - Sub Asemblies
+  - Jobs
